@@ -72,7 +72,7 @@ export const Lolodero: FC = () => {
 function renderSetup(timerConfigs: readonly TimerConfig[], onConfigUpdated: HandlerOf<TimerConfig>, onConfigDeleted: HandlerOf<TimerConfig>, addTimer: Handler, startTimer: Handler) {
   return (
     <>
-      {timerConfigs.map(config => (<TimerSetup key={config.id} config={config} onConfigUpdated={onConfigUpdated} onConfigDeleted={onConfigDeleted} />))}
+      {timerConfigs.map(config => (<TimerSetup key={`setup-${config.id}`} config={config} onConfigUpdated={onConfigUpdated} onConfigDeleted={onConfigDeleted} />))}
       <button onClick={addTimer}>ADD TIMER</button>
       <button onClick={startTimer}>START</button>
     </>
@@ -82,7 +82,7 @@ function renderSetup(timerConfigs: readonly TimerConfig[], onConfigUpdated: Hand
 function renderTimers(runningState: RunningTimerState, resetTimer: Handler) {
   return (
     <>
-      {runningState.timers.map(timerState => (<RunningTimer key={timerState.id} timer={timerState} />))}
+      {runningState.timers.map(timerState => (<RunningTimer key={`running-${timerState.id}`} timer={timerState} />))}
       <button onClick={resetTimer}>STOP</button>
     </>
   );
