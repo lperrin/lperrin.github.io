@@ -7,6 +7,7 @@ import {HandlerOf} from './util';
 export interface TimerSetupProps {
   config: TimerConfig;
   onConfigUpdated: HandlerOf<TimerConfig>;
+  onConfigDeleted: HandlerOf<TimerConfig>;
 }
 
 const StyledDiv = styled.div`
@@ -15,7 +16,7 @@ const StyledDiv = styled.div`
 `;
 
 export const TimerSetup: FC<TimerSetupProps> = props => {
-  const {config, onConfigUpdated} = props;
+  const {config, onConfigUpdated, onConfigDeleted} = props;
   const onChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     onConfigUpdated({
       ...config,
@@ -23,11 +24,14 @@ export const TimerSetup: FC<TimerSetupProps> = props => {
     })
   }, []);
 
+  const onDelete = useCallback(() => onConfigDeleted(config), [onConfigDeleted]);
+
   return (
     <StyledDiv>
       <span>TIMER</span>
       <input type="range" min="5" max="100" onChange={onChange} value={props.config.duration}></input>
       <span>{config.duration}</span>
+      <button onClick={onDelete}>X</button>
     </StyledDiv>
   );
 };

@@ -3,8 +3,8 @@ import {FC, useState} from 'react';
 import styled from 'styled-components';
 import {RunningTimer} from './runningTimer';
 import {TimerSetup} from './timerSetup';
-import {initRunningState, initTimerConfig, RunningTimerState, TimerConfig, TimerState, updateRunningTimer} from './timerService';
-import {Handler, HandlerOf, replaceInArray} from './util';
+import {initDefaultConfig, initRunningState, initTimerConfig, RunningTimerState, TimerConfig, updateRunningTimer} from './timerService';
+import {Handler, HandlerOf, removeInArray, replaceInArray} from './util';
 
 const StyledDiv = styled.div`
   max-width: 600px;
@@ -13,15 +13,15 @@ const StyledDiv = styled.div`
 `;
 
 export const Lolodero: FC = () => {
-  const [timerConfigs, setTimerConfigs] = useState<readonly TimerConfig[]>([
-    {duration: 10, index: 0},
-    {duration: 10, index: 1},
-    {duration: 10, index: 2}
-  ]);
+  const [timerConfigs, setTimerConfigs] = useState<readonly TimerConfig[]>(initDefaultConfig());
   const [runningTimer, setRunningTimer] = useState<RunningTimerState | undefined>();
 
   const onConfigUpdated = useCallback((config: TimerConfig) => {
     setTimerConfigs(timerConfigs => replaceInArray(timerConfigs, config))
+  }, [setTimerConfigs]);
+
+  const onConfigDeleted = useCallback((config: TimerConfig) => {
+    setTimerConfigs(timerConfigs => removeInArray(timerConfigs, config))
   }, [setTimerConfigs]);
 
   const addTimer = useCallback(() => {
@@ -64,15 +64,15 @@ export const Lolodero: FC = () => {
   return (
     <StyledDiv>
       {runningTimer && renderTimers(runningTimer, resetTimer)}
-      {!runningTimer && renderSetup(timerConfigs, onConfigUpdated, addTimer, startTimer)}
+      {!runningTimer && renderSetup(timerConfigs, onConfigUpdated, onConfigDeleted, addTimer, startTimer)}
     </StyledDiv>
     );
 };
 
-function renderSetup(timerConfigs: readonly TimerConfig[], onConfigUpdated: HandlerOf<TimerConfig>, addTimer: Handler, startTimer: Handler) {
+function renderSetup(timerConfigs: readonly TimerConfig[], onConfigUpdated: HandlerOf<TimerConfig>, onConfigDeleted: HandlerOf<TimerConfig>, addTimer: Handler, startTimer: Handler) {
   return (
     <>
-      {timerConfigs.map(config => (<TimerSetup key={config.index} config={config} onConfigUpdated={onConfigUpdated} />))}
+      {timerConfigs.map(config => (<TimerSetup key={config.id} config={config} onConfigUpdated={onConfigUpdated} onConfigDeleted={onConfigDeleted} />))}
       <button onClick={addTimer}>ADD TIMER</button>
       <button onClick={startTimer}>START</button>
     </>
@@ -82,7 +82,7 @@ function renderSetup(timerConfigs: readonly TimerConfig[], onConfigUpdated: Hand
 function renderTimers(runningState: RunningTimerState, resetTimer: Handler) {
   return (
     <>
-      {runningState.timers.map(timerState => (<RunningTimer key={timerState.index} timer={timerState} />))}
+      {runningState.timers.map(timerState => (<RunningTimer key={timerState.id} timer={timerState} />))}
       <button onClick={resetTimer}>STOP</button>
     </>
   );

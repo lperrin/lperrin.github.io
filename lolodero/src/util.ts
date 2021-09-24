@@ -18,3 +18,10 @@ export function replaceInArray<T extends WithIndex>(array: readonly T[], item: T
     ...array.slice(item.index + 1)
   ];
 }
+
+export function removeInArray<T extends WithIndex>(array: readonly T[], item: T) {
+  return [
+    ...array.slice(0, item.index),
+    ...array.slice(item.index + 1)
+  ];
+}

@@ -2,16 +2,29 @@ import {last} from 'lodash';
 import {milliseconds, replaceInArray, seconds} from './util';
 
 export interface TimerConfig {
+  id: number;
   index: number;
   duration: number;
 }
+
+let idSeed = 1;
 
 export function initTimerConfig(timerConfigs: readonly TimerConfig[]): TimerConfig {
   const lastConfig = last(timerConfigs);
 
   const duration = lastConfig ? lastConfig.duration : 10;
 
-  return {duration, index: timerConfigs.length};
+  return {id: idSeed++, duration, index: timerConfigs.length};
+}
+
+export function initDefaultConfig() {
+  const configs: TimerConfig[] = [];
+
+  for (let i = 0; i < 3; i++) {
+    configs.push(initTimerConfig(configs));
+  }
+
+  return configs;
 }
 
 export interface TimerState extends TimerConfig {
