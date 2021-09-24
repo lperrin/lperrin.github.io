@@ -1,8 +1,16 @@
 import React, {useCallback, useEffect} from 'react';
 import {FC, useState} from 'react';
+import styled from 'styled-components';
 import {RunningTimer} from './runningTimer';
-import {TimerSetup} from './timerConfig';
+import {TimerSetup} from './timerSetup';
 import {initRunningState, initTimerConfig, RunningTimerState, TimerConfig, TimerState, updateRunningTimer} from './timerService';
+import {Handler, HandlerOf, replaceInArray} from './util';
+
+const StyledDiv = styled.div`
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 40px;
+`;
 
 export const Lolodero: FC = () => {
   const [timerConfigs, setTimerConfigs] = useState<readonly TimerConfig[]>([
@@ -12,6 +20,10 @@ export const Lolodero: FC = () => {
   ]);
   const [runningTimer, setRunningTimer] = useState<RunningTimerState | undefined>();
 
+  const onConfigUpdated = useCallback((config: TimerConfig) => {
+    setTimerConfigs(timerConfigs => replaceInArray(timerConfigs, config))
+  }, [setTimerConfigs]);
+
   const addTimer = useCallback(() => {
     setTimerConfigs((timers) => {
       return [...timers, initTimerConfig(timers)];
@@ -19,17 +31,26 @@ export const Lolodero: FC = () => {
   }, [setTimerConfigs]);
 
   useEffect(() => {
-    const timerId = setInterval(() => {
-      console.log('TICK', runningTimer);
+    let isMounted = true;
+
+    function runner() {
+      if (!isMounted)
+        return;
 
       if (!runningTimer)
         return;
 
       const newRunningTimer = updateRunningTimer(runningTimer);
       setRunningTimer(newRunningTimer);
-    }, 500);
 
-    return () => clearInterval(timerId);
+      requestAnimationFrame(runner);
+    }
+
+    requestAnimationFrame(runner);
+
+    return () => {
+      isMounted = false
+    };
   });
 
   const startTimer = useCallback(() => {
@@ -41,20 +62,28 @@ export const Lolodero: FC = () => {
   }, [setRunningTimer]);
 
   return (
-    <div>
-      {runningTimer && renderTimers(runningTimer)}
-      {!runningTimer && renderSetup(timerConfigs)}
-      <button onClick={addTimer}>ADD TIMER</button>
-      <button onClick={startTimer}>START</button>
-      {runningTimer && <button onClick={resetTimer}>RESET TIMER</button>}
-    </div>
+    <StyledDiv>
+      {runningTimer && renderTimers(runningTimer, resetTimer)}
+      {!runningTimer && renderSetup(timerConfigs, onConfigUpdated, addTimer, startTimer)}
+    </StyledDiv>
     );
 };
 
-function renderSetup(timerConfigs: readonly TimerConfig[]) {
-  return timerConfigs.map(config => (<TimerSetup key={config.index} config={config} />));
+function renderSetup(timerConfigs: readonly TimerConfig[], onConfigUpdated: HandlerOf<TimerConfig>, addTimer: Handler, startTimer: Handler) {
+  return (
+    <>
+      {timerConfigs.map(config => (<TimerSetup key={config.index} config={config} onConfigUpdated={onConfigUpdated} />))}
+      <button onClick={addTimer}>ADD TIMER</button>
+      <button onClick={startTimer}>START</button>
+    </>
+  );
 }
 
-function renderTimers(runningState: RunningTimerState) {
-  return runningState.timers.map(timerState => (<RunningTimer key={timerState.index} timer={timerState} />));
+function renderTimers(runningState: RunningTimerState, resetTimer: Handler) {
+  return (
+    <>
+      {runningState.timers.map(timerState => (<RunningTimer key={timerState.index} timer={timerState} />))}
+      <button onClick={resetTimer}>STOP</button>
+    </>
+  );
 }

@@ -1,5 +1,5 @@
 import {last} from 'lodash';
-import {milliseconds, seconds} from './util';
+import {milliseconds, replaceInArray, seconds} from './util';
 
 export interface TimerConfig {
   index: number;
@@ -51,7 +51,7 @@ function initTimerState(config: TimerConfig): TimerState {
 
 export function updateRunningTimer(state: RunningTimerState): RunningTimerState {
   const now = Date.now();
-  const delta = now - state.updatedAt;
+  const delta = seconds(now - state.updatedAt);
 
   const newTimers = applyDelta(state.timers, delta);
   const isEnded = !findActiveTimer(newTimers);
@@ -74,7 +74,7 @@ function applyDelta(timers: readonly TimerState[], delta: number): readonly Time
     return timers;
 
   const [newTimer, newDelta] = updateTimer(activeTimer, delta);
-  const newTimers = replaceTimer(timers, newTimer);
+  const newTimers = replaceInArray(timers, newTimer);
 
   if (newDelta > 0)
     return applyDelta(newTimers, newDelta);
@@ -84,23 +84,15 @@ function applyDelta(timers: readonly TimerState[], delta: number): readonly Time
 
 function updateTimer(timer: TimerState, delta: number): [TimerState, number] {
   const elapsed = timer.elapsed + delta;
-  const isEnded = seconds(elapsed) >= timer.duration;
+  const isEnded = elapsed >= timer.duration;
 
   if (isEnded) {
-    const endedTimer = {...timer, isStarted: true, isEnded: true, elapsed: milliseconds(timer.duration)};
-    return [endedTimer, elapsed - milliseconds(timer.duration)];
+    const endedTimer = {...timer, isStarted: true, isEnded: true, elapsed: timer.duration};
+    return [endedTimer, elapsed - timer.duration];
   }
 
   const continuingTimer = {...timer, isStarted: true, isEnded: false, elapsed};
   return [continuingTimer, 0];
-}
-
-function replaceTimer(timers: readonly TimerState[], timer: TimerState) {
-  return [
-    ...timers.slice(0, timer.index),
-    timer,
-    ...timers.slice(timer.index + 1)
-  ];
 }
 
 export enum RunningTimerStatuses {
