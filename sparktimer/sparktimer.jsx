@@ -220,11 +220,13 @@ function computeProgress(timer) {
 }
 
 function renderTimerRemaining(timer) {
-  const remaining = (timer.total - timer.elapsed) / 1000;
+  const remaining = Math.round((timer.total - timer.elapsed) / 1000);
   const minutes = Math.floor(remaining / 60);
   const seconds = Math.floor(remaining - minutes * 60);
 
-  return minutes === 0 ? `${seconds}s` : `${minutes}:${seconds}`;
+  const secondsStr = seconds < 10 ? `0${seconds}` : seconds.toString();
+
+  return minutes === 0 ? `${seconds}s` : `${minutes}:${secondsStr}`;
 }
 
 const domContainer = document.querySelector('#sparktimer-container');
