@@ -181,7 +181,7 @@ const ControlButtons = ({
       return /*#__PURE__*/React.createElement("button", {
         className: "control",
         onClick: () => onControl('pause')
-      }, "Pause");
+      }, "Stop");
 
     case 'waiting':
       return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
@@ -225,7 +225,7 @@ const Footer = () => /*#__PURE__*/React.createElement("div", {
 }, "\u26A1\uFE0F ", /*#__PURE__*/React.createElement("a", {
   href: "http://sparkpractice.com",
   target: "_blank"
-}, "Spark Practice"));
+}, "www.sparkpractice.com"));
 
 const Timers = ({
   timers,
